@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import java.util.Calendar;
+import java.util.Set;
 
 public class SetNewAlarm extends AppCompatActivity {
 
@@ -18,18 +19,46 @@ public class SetNewAlarm extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_set_alarm);
+        Intent intent = getIntent();
+        String recid = intent.getStringExtra("alarmRecid");
+
+        if (!(recid == null)) {
+            loadExistingAlarm(recid);
+        }
+
         setupButtons();
     }
 
     private void setupButtons() {
         Button saveAlarm = (Button) findViewById(R.id.btnSaveAlarm);
         Button pickTime = (Button) findViewById(R.id.btnPickTime);
+        Button cancel = (Button)findViewById(R.id.btnCancel);
 
+        pickTime.setText("Set Time");
+        cancel.setText("Cancel");
         saveAlarm.setText("Save Alarm");
 
+        setCancelListener(cancel);
         setSaveAlarmListener(saveAlarm);
         setPickTimeListener(pickTime);
+    }
 
+    private void loadExistingAlarm(String recid) {
+        MyDBHandler dbHandler = new MyDBHandler(SetNewAlarm.this, "alarms_data.db", null, 1);
+        String existingText = dbHandler.loadByRecID(recid);
+        TextView timeDisplay = (TextView) findViewById(R.id.showTime);
+        timeDisplay.setText(existingText);
+    }
+
+    private void setCancelListener(Button cancel) {
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent backToHome = new Intent(SetNewAlarm.this, MainActivity.class);
+                startActivity(backToHome);
+                finish();
+            }
+        });
     }
 
     private void setPickTimeListener(Button pickTime) {
