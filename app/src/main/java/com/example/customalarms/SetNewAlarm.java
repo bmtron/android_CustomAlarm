@@ -45,14 +45,32 @@ public class SetNewAlarm extends AppCompatActivity {
                 mTimePicker = new TimePickerDialog(SetNewAlarm.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-
+                        String newSelectedMinute;
+                        String newSelectedHour;
+                        boolean isMorning = true;
+                        
                         if (selectedHour > 12) {
                             selectedHour -= 12;
-                            timeDisplay.setText(selectedHour + ":" + selectedMinute + " PM");
+                            isMorning = false;
+                        }
+
+                        if (selectedMinute < 10) {
+                            newSelectedMinute = "0" + selectedMinute;
                         }
                         else {
-                            timeDisplay.setText(selectedHour + ":" + selectedMinute + " AM");
+                            newSelectedMinute = Integer.toString(selectedMinute);
                         }
+                        newSelectedHour = Integer.toString(selectedHour);
+
+                        String formattedTime;
+
+                        if (isMorning){
+                            formattedTime = newSelectedHour + ":" + newSelectedMinute + " AM";
+                        }
+                        else {
+                            formattedTime = newSelectedHour + ":" + newSelectedMinute + " PM";
+                        }
+                        timeDisplay.setText(formattedTime);
                     }
                 }, hour, minute, false);
                 mTimePicker.setTitle("Select time");
