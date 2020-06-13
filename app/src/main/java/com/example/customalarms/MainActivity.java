@@ -22,8 +22,12 @@ public class MainActivity extends AppCompatActivity {
         Intent i = getIntent();
         String extras = i.getStringExtra("alarmtime");
 
-        if (extras != null) {
-            setupListViewTest(extras);
+        String alarmTime;
+
+        MyDBHandler dbHandler = new MyDBHandler(MainActivity.this, "alarms_data.db", null, 1);
+        alarmTime = dbHandler.loadHandler();
+        if (alarmTime != "") {
+            setupListViewTest(alarmTime);
         }
         setupButtons();
     }

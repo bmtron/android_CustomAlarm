@@ -48,12 +48,11 @@ public class SetNewAlarm extends AppCompatActivity {
                         String newSelectedMinute;
                         String newSelectedHour;
                         boolean isMorning = true;
-                        
+
                         if (selectedHour > 12) {
                             selectedHour -= 12;
                             isMorning = false;
                         }
-
                         if (selectedMinute < 10) {
                             newSelectedMinute = "0" + selectedMinute;
                         }
@@ -85,7 +84,8 @@ public class SetNewAlarm extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 final String alarmTime = timeDisplay.getText().toString();
-
+                MyDBHandler dbHandler = new MyDBHandler(SetNewAlarm.this, "alarms_data.db",null, 1);
+                dbHandler.addHandler(alarmTime);
                 Intent backToBase = new Intent(v.getContext(), MainActivity.class);
                 backToBase.putExtra("alarmtime", alarmTime);
                 startActivity(backToBase);
