@@ -78,4 +78,18 @@ public class MyDBHandler extends SQLiteOpenHelper {
         c = null;
         return result;
     }
+
+    public boolean updateHandler(String id, String time) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues args = new ContentValues();
+
+        args.put("Time", time);
+
+        return db.update(TABLE_NAME, args, "recid = " + id, null) > 0;
+
+    }
+    public boolean clearDB() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(TABLE_NAME, null, null) > 0;
+    }
 }

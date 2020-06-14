@@ -2,7 +2,10 @@ package com.example.customalarms;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +14,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Set;
 
 public class SetNewAlarm extends AppCompatActivity {
@@ -23,10 +27,13 @@ public class SetNewAlarm extends AppCompatActivity {
         String recid = intent.getStringExtra("alarmRecid");
 
         if (!(recid == null)) {
+            setupEditable(recid);
             loadExistingAlarm(recid);
         }
+        else {
+            setupButtons();
+        }
 
-        setupButtons();
     }
 
     private void setupButtons() {
@@ -40,6 +47,20 @@ public class SetNewAlarm extends AppCompatActivity {
 
         setCancelListener(cancel);
         setSaveAlarmListener(saveAlarm);
+        setPickTimeListener(pickTime);
+    }
+
+    private void setupEditable(String recid) {
+        Button saveAlarm = (Button) findViewById(R.id.btnSaveAlarm);
+        Button pickTime = (Button) findViewById(R.id.btnPickTime);
+        Button cancel = (Button)findViewById(R.id.btnCancel);
+
+        pickTime.setText("Set Time");
+        cancel.setText("Cancel");
+        saveAlarm.setText("Save Alarm");
+
+        setCancelListener(cancel);
+        setUpdateAlarmListener(saveAlarm, recid);
         setPickTimeListener(pickTime);
     }
 
@@ -115,6 +136,23 @@ public class SetNewAlarm extends AppCompatActivity {
                 final String alarmTime = timeDisplay.getText().toString();
                 MyDBHandler dbHandler = new MyDBHandler(SetNewAlarm.this, "alarms_data.db",null, 1);
                 dbHandler.addHandler(alarmTime);
+                Intent backToBase = new Intent(v.getContext(), MainActivity.class);
+                backToBase.putExtra("alarmtime", alarmTime);
+                startActivity(backToBase);
+                finish();
+            }
+        });
+    }
+
+    private void setUpdateAlarmListener(Button saveAlarm, final String recid) {
+        final TextView  timeDisplay = (TextView) findViewById(R.id.showTime);
+
+        saveAlarm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final String alarmTime = timeDisplay.getText().toString();
+                MyDBHandler dbHandler = new MyDBHandler(SetNewAlarm.this, "alarms_data.db",null, 1);
+                dbHandler.updateHandler(recid, alarmTime);
                 Intent backToBase = new Intent(v.getContext(), MainActivity.class);
                 backToBase.putExtra("alarmtime", alarmTime);
                 startActivity(backToBase);
