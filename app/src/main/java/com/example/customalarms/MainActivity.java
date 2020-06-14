@@ -3,10 +3,13 @@ package com.example.customalarms;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.Gravity;
@@ -33,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        createNotificationChannel();
         Intent i = getIntent();
         String extras = i.getStringExtra("alarmtime");
 
@@ -196,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
         return newMinute;
     }
     private boolean parseMorning(String morning) {
-        if (morning == "AM") {
+        if (morning.equals("AM")) {
             return true;
         }
         else {
@@ -226,5 +230,14 @@ public class MainActivity extends AppCompatActivity {
         PendingIntent pIntent = PendingIntent.getBroadcast(MainActivity.this, 1, nIntent, 0);
 
         manager.set(AlarmManager.RTC_WAKEUP, cal_alarm.getTimeInMillis(), pIntent);
+    }
+
+    private void createNotificationChannel() {
+        CharSequence name = "Alarm Notification";
+        String description = "The main alarm notification";
+        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+        NotificationChannel channel = new NotificationChannel("125", name, importance);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
     }
 }
