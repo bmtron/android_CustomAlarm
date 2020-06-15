@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.example.customalarms.GlobalVars;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -47,7 +48,22 @@ public class MainActivity extends AppCompatActivity {
         if (alarmTime.size() != 0) {
             setupListViewTest(alarmTime);
         }
+        int switchOnCount = 1000;
+        for (ArrayList<String> item : alarmTime) {
+            String test = item.get(2);
+            if (item.get(2).equals("1")) {
+                Switch s = (Switch) findViewById(switchOnCount);
+                s.setChecked(true);
+            }
+            else {
+                Switch s = (Switch) findViewById(switchOnCount);
+                s.setChecked(false);
+            }
+            switchOnCount++;
+        }
         setupButtons();
+
+
     }
 
     private void setupButtons() {
@@ -92,61 +108,68 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     private void setupListViewTest(ArrayList<ArrayList<String>> alarmTime) {
-
+        int count = 1000;
         for (final ArrayList<String> var : alarmTime)
         {
             final RelativeLayout alarmLayout = new RelativeLayout(this);
             final TextView alarmItem = new TextView(this);
             final Button btnEditAlarm = new Button(this);
             final Switch toggleAlarm = new Switch(this);
-
-            alarmItem.setClickable(true);
-
-            setAlarmItemClick(alarmItem);
-            setEditAlarmClick(btnEditAlarm, var.get(0));
-
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 200);
-            params.setMargins(0, 10, 10, 10);
-
-
-            LinearLayout rl = (LinearLayout) findViewById(R.id.LinearLayout_List);
-
-            rl.addView(alarmLayout);
+            toggleAlarm.setId(count);
+            count++;
 
             String time = var.get(1);
             String[] timeTextArr = time.split(" ");
             String[] timeHoursMinsArr = timeTextArr[0].split(":");
-
+            setLayoutAndListeners(alarmLayout, alarmItem, btnEditAlarm, toggleAlarm, var);
             boolean morning = parseMorning(timeTextArr[1]);
             int hour = parseHour(timeHoursMinsArr[0]);
             int minute = parseMinute((timeHoursMinsArr[1]));
-            setupSwitchLogic(toggleAlarm, hour, minute, morning);
+            setupSwitchLogic(toggleAlarm, hour, minute, morning, var.get(0));
 
-            alarmLayout.setBackgroundColor(Color.parseColor("#E0DEDE"));
-            alarmLayout.setLayoutParams(params);
-            alarmItem.setTag(var.get(0));
-            alarmItem.setText(var.get(1));
-            alarmItem.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
-            alarmItem.setTextColor(Color.parseColor("#000000"));
-            alarmLayout.addView(alarmItem);
-            alarmLayout.addView(btnEditAlarm);
-            alarmLayout.addView(toggleAlarm);
-            setupTimeDisplay(alarmItem);
-            setupEditButton(btnEditAlarm);
-            setupToggleSwitch(toggleAlarm);
+
         }
 
 
     }
-    private void setupSwitchLogic(final Switch alarmOnOff, final int hour, final int minute, final boolean morning) {
+
+    private void setLayoutAndListeners(RelativeLayout alarmLayout, TextView alarmItem, Button btnEditAlarm, Switch toggleAlarm, ArrayList<String> var) {
+        alarmItem.setClickable(true);
+        setAlarmItemClick(alarmItem);
+        setEditAlarmClick(btnEditAlarm, var.get(0));
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 200);
+        params.setMargins(0, 10, 10, 10);
+
+        LinearLayout rl = (LinearLayout) findViewById(R.id.LinearLayout_List);
+        rl.addView(alarmLayout);
+
+        alarmLayout.setBackgroundColor(Color.parseColor("#E0DEDE"));
+        alarmLayout.setLayoutParams(params);
+        alarmItem.setTag(var.get(0));
+        alarmItem.setText(var.get(1));
+        alarmItem.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+        alarmItem.setTextColor(Color.parseColor("#000000"));
+        alarmLayout.addView(alarmItem);
+        alarmLayout.addView(btnEditAlarm);
+        alarmLayout.addView(toggleAlarm);
+        setupTimeDisplay(alarmItem);
+        setupEditButton(btnEditAlarm);
+        setupToggleSwitch(toggleAlarm);
+    }
+    private void setupSwitchLogic(final Switch alarmOnOff, final int hour, final int minute, final boolean morning, final String recid) {
+        final MyDBHandler db = new MyDBHandler(MainActivity.this, "alarms_data.db", null, 1);
+
 
         alarmOnOff.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
               if (isChecked) {
+                  db.updateAlarmOn(recid, "1");
                   setAlarm(hour, minute, morning);
               }
               else {
+                  db.updateAlarmOn(recid, "0");
                   AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                   Intent myIntent = new Intent(MainActivity.this, AlarmReceiver.class);
                   PendingIntent pIntent = PendingIntent.getBroadcast(MainActivity.this, 1, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);

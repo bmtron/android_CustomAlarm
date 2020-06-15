@@ -15,6 +15,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
     public static final String TABLE_NAME = "Alarms";
     public static final String COLUMN_ID = "recID";
     public static final String COLUMN_TIME = "Time";
+    public static final String COLUMN_ISON = "isON";
 
 
     public MyDBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
@@ -22,7 +23,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
     }
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" + COLUMN_ID + " INTEGER PRIMARY KEY, " + COLUMN_TIME + " TEXT)";
+        String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" + COLUMN_ID + " INTEGER PRIMARY KEY, " + COLUMN_TIME + " TEXT, " + COLUMN_ISON + " BOOLEAN)";
         db.execSQL(CREATE_TABLE);
     }
         @Override
@@ -41,8 +42,10 @@ public class MyDBHandler extends SQLiteOpenHelper {
 
                     String result_recid = c.getString(0);
                     String result_text = c.getString(1);
+                    String result_ison = c.getString(2);
                     temp.add(result_recid);
                     temp.add(result_text);
+                    temp.add(result_ison);
                     result.add(temp);
                 } while (c.moveToNext());
             }
@@ -55,6 +58,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
     public void addHandler(String alarmTime) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_TIME, alarmTime);
+        values.put(COLUMN_ISON, "1");
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(TABLE_NAME, null, values);
         db.close();
@@ -87,6 +91,14 @@ public class MyDBHandler extends SQLiteOpenHelper {
 
         return db.update(TABLE_NAME, args, "recid = " + id, null) > 0;
 
+    }
+    public boolean updateAlarmOn(String id, String value) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues args = new ContentValues();
+
+        args.put("isON", value);
+
+        return db.update(TABLE_NAME, args, "recid = " + id, null) > 0;
     }
     public boolean clearDB() {
         SQLiteDatabase db = this.getWritableDatabase();
