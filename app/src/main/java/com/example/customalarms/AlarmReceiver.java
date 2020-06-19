@@ -1,6 +1,7 @@
 package com.example.customalarms;
 
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -20,30 +21,30 @@ public class AlarmReceiver extends BroadcastReceiver {
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     public void onReceive(Context con, Intent intent) {
-        Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-        if (alarmUri == null) {
-            alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        }
-        final Ringtone ringtone = RingtoneManager.getRingtone(con, alarmUri);
-        ringtone.play();
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        ringtone.stop();
-                    }
-                },
-        5000);
+        Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        Ringtone r = RingtoneManager.getRingtone(con, ringtoneUri);
+
+        //r.play();
+        Intent startIntent = new Intent(con, RingtoneService.class);
+        PendingIntent pIntent = PendingIntent.getActivity(con, 0, startIntent, 0);
+        con.startService(startIntent);
+
         buildNotification(con);
         Toast.makeText(con, "ALARM", Toast.LENGTH_LONG).show();
     }
 
     private void buildNotification(Context con) {
+        Intent intent = new Intent(con, MathProblems.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(con, 0, intent, 0);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(con, channelId)
                 .setSmallIcon(R.drawable.notification_small)
                 .setContentTitle("Alarm is ringing")
-                .setContentText("Alarm is going off")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setContentText("Tap here to solve a puzzle and turn off the alarm.")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setOngoing(true);
 
         NotificationManager notificationManager = (NotificationManager) con.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(125, builder.build());

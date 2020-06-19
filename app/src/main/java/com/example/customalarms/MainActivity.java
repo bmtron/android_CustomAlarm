@@ -89,8 +89,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v)
             {
                 alarm.setBackgroundColor(Color.parseColor("#CAC8C8"));
-
-
             }
         });
     }
