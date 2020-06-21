@@ -32,6 +32,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
+    Intent mServiceIntent;
+    private RingtoneService mRingtoneService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
             switchOnCount++;
         }
         setupButtons();
+        mRingtoneService = new RingtoneService();
+        mServiceIntent = new Intent(this, RingtoneService.class);
 
 
     }
@@ -232,6 +236,9 @@ public class MainActivity extends AppCompatActivity {
         if (!morning) {
             hour += 12;
         }
+        if (morning && (hour == 12)) {
+            hour = 0;
+        }
 
         AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Date date = new Date();
@@ -247,8 +254,8 @@ public class MainActivity extends AppCompatActivity {
             cal_alarm.add(Calendar.DATE, 1);
         }
 
-        Intent nIntent = new Intent(MainActivity.this, AlarmReceiver.class);
-        PendingIntent pIntent = PendingIntent.getBroadcast(MainActivity.this, 1, nIntent, 0);
+        Intent nIntent = new Intent(this, AlarmReceiver.class);
+        PendingIntent pIntent = PendingIntent.getBroadcast(this, 1, nIntent, 0);
 
         manager.set(AlarmManager.RTC_WAKEUP, cal_alarm.getTimeInMillis(), pIntent);
     }

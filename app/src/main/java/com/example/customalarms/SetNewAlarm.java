@@ -103,6 +103,9 @@ public class SetNewAlarm extends AppCompatActivity {
                             selectedHour -= 12;
                             isMorning = false;
                         }
+                        if (selectedHour == 0) {
+                            selectedHour = 12;
+                        }
                         if (selectedMinute < 10) {
                             newSelectedMinute = "0" + selectedMinute;
                         }

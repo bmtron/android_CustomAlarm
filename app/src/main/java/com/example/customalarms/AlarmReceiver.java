@@ -18,19 +18,12 @@ import androidx.core.app.NotificationManagerCompat;
 
 public class AlarmReceiver extends BroadcastReceiver {
     private String channelId = "125";
+
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     public void onReceive(Context con, Intent intent) {
-        Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-        Ringtone r = RingtoneManager.getRingtone(con, ringtoneUri);
-
-        //r.play();
-        Intent startIntent = new Intent(con, RingtoneService.class);
-        PendingIntent pIntent = PendingIntent.getActivity(con, 0, startIntent, 0);
-        con.startService(startIntent);
-
+        AlarmMediaPlayer.playAlarmAudio(con);
         buildNotification(con);
-        Toast.makeText(con, "ALARM", Toast.LENGTH_LONG).show();
     }
 
     private void buildNotification(Context con) {

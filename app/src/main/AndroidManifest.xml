@@ -20,8 +20,13 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".AlarmReceiver" />
-        <service android:name=".RingtoneService"/>
+        <receiver android:name=".AlarmReceiver">
+        </receiver>
+        <service android:name=".RingtoneService"
+            android:enabled="true"
+            android:stopWithTask="false"/>
     </application>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.SET_ALARM"/>
 
 </manifest>

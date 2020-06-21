@@ -12,6 +12,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 public class MathProblems extends AppCompatActivity {
     Button AlarmOff;
@@ -32,14 +34,22 @@ public class MathProblems extends AppCompatActivity {
         AlarmOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.cancel(125);
-                Intent stopIntent = new Intent(MathProblems.this, RingtoneService.class);
-                stopService(stopIntent);
+                EditText usrAnswer = (EditText) findViewById(R.id.usrAnswer);
+                String answer = usrAnswer.getText().toString();
+                if (!answer.equals(Integer.toString(69420))) {
+                    Toast.makeText(MathProblems.this, "Wrong Answer, try again!", Toast.LENGTH_LONG).show();
+                    usrAnswer.setText("");
+                }
+                else {
+                    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    notificationManager.cancel(125);
+                    Intent stopIntent = new Intent(MathProblems.this, RingtoneService.class);
+                    AlarmMediaPlayer.stopAlarmAudio();
 
-                Intent i = new Intent(MathProblems.this, MainActivity.class);
-                startActivity(i);
-                finish();
+                    Intent i = new Intent(MathProblems.this, MainActivity.class);
+                    startActivity(i);
+                    finish();
+                }
             }
         });
     }
