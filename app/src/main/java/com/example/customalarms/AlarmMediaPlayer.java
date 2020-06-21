@@ -19,6 +19,7 @@ public class AlarmMediaPlayer {
         if (!mediaPlayer.isPlaying()) {
             isPlaying = true;
             mediaPlayer.start();
+            mediaPlayer.setLooping(true);
         }
     }
     public static void stopAlarmAudio() {
