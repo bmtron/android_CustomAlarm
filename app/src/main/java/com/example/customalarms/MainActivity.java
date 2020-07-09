@@ -1,6 +1,7 @@
 package com.example.customalarms;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
 
 import android.app.AlarmManager;
 import android.app.NotificationChannel;
@@ -30,10 +31,12 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     Intent mServiceIntent;
     private RingtoneService mRingtoneService;
+    private AlarmsDB db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,17 +46,19 @@ public class MainActivity extends AppCompatActivity {
         Intent i = getIntent();
         String extras = i.getStringExtra("alarmtime");
 
-        ArrayList<ArrayList<String>> alarmTime;
+        List<Alarms> alarmTime;
 
-        MyDBHandler dbHandler = new MyDBHandler(MainActivity.this, "alarms_data.db", null, 1);
-        alarmTime = dbHandler.loadHandler();
+        //MyDBHandler dbHandler = new MyDBHandler(MainActivity.this, "alarms_data.db", null, 1); ***deprecated db resources
+
+        db = Room.databaseBuilder(getApplicationContext(), AlarmsDB.class, "alarms_data.db").createFromAsset("databases/alarms_data.db").allowMainThreadQueries().build();
+
+        alarmTime = db.alarmsDao().getAll();
         if (alarmTime.size() != 0) {
             setupListViewTest(alarmTime);
         }
         int switchOnCount = 1000;
-        for (ArrayList<String> item : alarmTime) {
-            String test = item.get(2);
-            if (item.get(2).equals("1")) {
+        for (Alarms item : alarmTime) {
+            if (item.isOn == 1) {
                 Switch s = (Switch) findViewById(switchOnCount);
                 s.setChecked(true);
             }
@@ -101,17 +106,16 @@ public class MainActivity extends AppCompatActivity {
         clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyDBHandler db = new MyDBHandler(MainActivity.this, "alarms_data.db", null, 1);
-                db.clearDB();
+                db.alarmsDao().nukeAlarms();
                 Toast.makeText(MainActivity.this, "Database cleared successfully.", Toast.LENGTH_LONG).show();
                 finish();
                 startActivity(getIntent());
             }
         });
     }
-    private void setupListViewTest(ArrayList<ArrayList<String>> alarmTime) {
+    private void setupListViewTest(List<Alarms> alarmTime) {
         int count = 1000;
-        for (final ArrayList<String> var : alarmTime)
+        for (final Alarms var : alarmTime)
         {
             final RelativeLayout alarmLayout = new RelativeLayout(this);
             final TextView alarmItem = new TextView(this);
@@ -120,25 +124,23 @@ public class MainActivity extends AppCompatActivity {
             toggleAlarm.setId(count);
             count++;
 
-            String time = var.get(1);
+            String time = var.Time;
             String[] timeTextArr = time.split(" ");
             String[] timeHoursMinsArr = timeTextArr[0].split(":");
             setLayoutAndListeners(alarmLayout, alarmItem, btnEditAlarm, toggleAlarm, var);
             boolean morning = parseMorning(timeTextArr[1]);
             int hour = parseHour(timeHoursMinsArr[0]);
             int minute = parseMinute((timeHoursMinsArr[1]));
-            setupSwitchLogic(toggleAlarm, hour, minute, morning, var.get(0));
-
-
+            setupSwitchLogic(toggleAlarm, hour, minute, morning, Integer.toString(var.recID));
         }
 
 
     }
 
-    private void setLayoutAndListeners(RelativeLayout alarmLayout, TextView alarmItem, Button btnEditAlarm, Switch toggleAlarm, ArrayList<String> var) {
+    private void setLayoutAndListeners(RelativeLayout alarmLayout, TextView alarmItem, Button btnEditAlarm, Switch toggleAlarm, Alarms var) {
         alarmItem.setClickable(true);
         setAlarmItemClick(alarmItem);
-        setEditAlarmClick(btnEditAlarm, var.get(0));
+        setEditAlarmClick(btnEditAlarm, Integer.toString(var.recID));
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 200);
         params.setMargins(0, 10, 10, 10);
@@ -148,8 +150,8 @@ public class MainActivity extends AppCompatActivity {
 
         alarmLayout.setBackgroundColor(Color.parseColor("#E0DEDE"));
         alarmLayout.setLayoutParams(params);
-        alarmItem.setTag(var.get(0));
-        alarmItem.setText(var.get(1));
+        alarmItem.setTag(var.recID);
+        alarmItem.setText(var.Time);
         alarmItem.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
         alarmItem.setTextColor(Color.parseColor("#000000"));
         alarmLayout.addView(alarmItem);
@@ -160,18 +162,18 @@ public class MainActivity extends AppCompatActivity {
         setupToggleSwitch(toggleAlarm);
     }
     private void setupSwitchLogic(final Switch alarmOnOff, final int hour, final int minute, final boolean morning, final String recid) {
-        final MyDBHandler db = new MyDBHandler(MainActivity.this, "alarms_data.db", null, 1);
+        /*final MyDBHandler db = new MyDBHandler(MainActivity.this, "alarms_data.db", null, 1);*/
 
 
         alarmOnOff.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
               if (isChecked) {
-                  db.updateAlarmOn(recid, "1");
+                  db.alarmsDao().updateIsON(1, Integer.parseInt(recid));
                   setAlarm(hour, minute, morning);
               }
               else {
-                  db.updateAlarmOn(recid, "0");
+                  db.alarmsDao().updateIsON(0, Integer.parseInt(recid));
                   AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                   Intent myIntent = new Intent(MainActivity.this, AlarmReceiver.class);
                   PendingIntent pIntent = PendingIntent.getBroadcast(MainActivity.this, 1, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);

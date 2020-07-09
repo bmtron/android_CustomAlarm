@@ -1,6 +1,7 @@
 package com.example.customalarms;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -18,14 +19,14 @@ import java.util.Date;
 import java.util.Set;
 
 public class SetNewAlarm extends AppCompatActivity {
-
+    private AlarmsDB db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_set_alarm);
         Intent intent = getIntent();
         String recid = intent.getStringExtra("alarmRecid");
-
+        db = Room.databaseBuilder(getApplicationContext(), AlarmsDB.class, "alarms_data.db").createFromAsset("databases/alarms_data.db").allowMainThreadQueries().build();
         if (!(recid == null)) {
             setupEditable(recid);
             loadExistingAlarm(recid);
@@ -65,8 +66,9 @@ public class SetNewAlarm extends AppCompatActivity {
     }
 
     private void loadExistingAlarm(String recid) {
-        MyDBHandler dbHandler = new MyDBHandler(SetNewAlarm.this, "alarms_data.db", null, 1);
-        String existingText = dbHandler.loadByRecID(recid);
+        //MyDBHandler dbHandler = new MyDBHandler(SetNewAlarm.this, "alarms_data.db", null, 1);
+        Alarms alarm = db.alarmsDao().loadByRecId(Integer.parseInt(recid));
+        String existingText = alarm.Time;
         TextView timeDisplay = (TextView) findViewById(R.id.showTime);
         timeDisplay.setText(existingText);
     }
@@ -137,8 +139,13 @@ public class SetNewAlarm extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 final String alarmTime = timeDisplay.getText().toString();
-                MyDBHandler dbHandler = new MyDBHandler(SetNewAlarm.this, "alarms_data.db",null, 1);
+              /*  MyDBHandler dbHandler = new MyDBHandler(SetNewAlarm.this, "alarms_data.db",null, 1);
                 dbHandler.addHandler(alarmTime);
+                */
+                Alarms alarm = new Alarms();
+                alarm.isOn = 1;
+                alarm.Time = alarmTime;
+                db.alarmsDao().insert(alarm);
                 Intent backToBase = new Intent(v.getContext(), MainActivity.class);
                 backToBase.putExtra("alarmtime", alarmTime);
                 startActivity(backToBase);
@@ -154,8 +161,11 @@ public class SetNewAlarm extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 final String alarmTime = timeDisplay.getText().toString();
-                MyDBHandler dbHandler = new MyDBHandler(SetNewAlarm.this, "alarms_data.db",null, 1);
-                dbHandler.updateHandler(recid, alarmTime);
+               /* MyDBHandler dbHandler = new MyDBHandler(SetNewAlarm.this, "alarms_data.db",null, 1);
+                dbHandler.updateHandler(recid, alarmTime);*/
+
+                Alarms alarm = new Alarms();
+                db.alarmsDao().updateTime(alarmTime, Integer.parseInt(recid));
                 Intent backToBase = new Intent(v.getContext(), MainActivity.class);
                 backToBase.putExtra("alarmtime", alarmTime);
                 startActivity(backToBase);
