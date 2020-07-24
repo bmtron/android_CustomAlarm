@@ -14,7 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 /***
- * Deprecated and no longer needed. See AlarmMediaPlayer class as it has taken over background functionality
+ * Entire class has been deprecated and no longer needed. See AlarmMediaPlayer class as it has taken over background functionality
  */
 public class RingtoneService extends Service {
     private String channelId = "125";
@@ -39,6 +39,7 @@ public class RingtoneService extends Service {
 
     private void buildNotification(Context con) {
         Intent intent = new Intent(con, MathProblems.class);
+
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(con, 0, intent, 0);
 

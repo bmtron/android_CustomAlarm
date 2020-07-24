@@ -265,8 +265,8 @@ public class MainActivity extends AppCompatActivity {
     private void createNotificationChannel() {
         CharSequence name = "Alarm Notification";
         String description = "The main alarm notification";
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
-        NotificationChannel channel = new NotificationChannel("125", name, importance);
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+        NotificationChannel channel = new NotificationChannel(Integer.toString(GlobalVars.channelId), name, importance);
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
     }

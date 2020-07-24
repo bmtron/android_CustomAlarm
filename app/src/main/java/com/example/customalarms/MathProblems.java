@@ -12,11 +12,13 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.List;
 import java.util.Random;
 
 public class MathProblems extends AppCompatActivity {
@@ -26,15 +28,23 @@ public class MathProblems extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        int flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                | WindowManager.LayoutParams.FLAG_FULLSCREEN;
+
+        getWindow().addFlags(flags);
         setContentView(R.layout.layout_mathproblems);
-        setupAlarmOff();
         db = Room.databaseBuilder(getApplicationContext(), AlarmsDB.class, "alarms_data.db").createFromAsset("databases/alarms_data.db").allowMainThreadQueries().build();
+        setupAlarmOff();
+
     }
 
     public void setupAlarmOff() {
         AlarmOff = (Button) findViewById(R.id.btnAlarmOff);
         MathQuestion = (TextView) findViewById(R.id.mathQuestion);
-        final Math mathProblem = db.mathDao().getRandomByRecId(getRandomRecID());
+        int randomRecId = getRandomRecID();
+        final Math mathProblem = db.mathDao().getRandomByRecId(randomRecId);
         MathQuestion.setText(mathProblem.Questions);
         Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         if (alarmUri == null) {
@@ -52,7 +62,7 @@ public class MathProblems extends AppCompatActivity {
                 }
                 else {
                     NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                    notificationManager.cancel(125);
+                    notificationManager.cancel(GlobalVars.channelId);
                     Intent stopIntent = new Intent(MathProblems.this, RingtoneService.class);
                     AlarmMediaPlayer.stopAlarmAudio();
 
@@ -65,9 +75,13 @@ public class MathProblems extends AppCompatActivity {
     }
 
     private int getRandomRecID() {
-        int maxRecId = db.mathDao().getMaxRecId();
+        List<Math> math = db.mathDao().getAllMath();
+
+        int size = math.size();
+        int test = size;
+
         Random random = new Random();
-        int rand = random.nextInt(maxRecId - 1) + 1;
+        int rand = random.nextInt(math.size()) + 1;
 
         return rand;
     }
